@@ -55,60 +55,76 @@ The backend includes the following security protections:
 
 ```text
 backend/
-??? prisma/
-?   ??? migrations/
-?   ??? schema.prisma
-?   ??? seed-admin.ts
-?   ??? seed.ts
-??? src/
-?   ??? app.ts
-?   ??? server.ts
-?   ??? common/
-?   ?   ??? middleware/
-?   ?   ?   ??? authGuard.ts
-?   ?   ?   ??? errorHandler.ts
-?   ?   ?   ??? roleGuard.ts
-?   ?   ?   ??? upload.ts
-?   ?   ?   ??? validate.ts
-?   ?   ??? types/
-?   ?   ?   ??? express.d.ts
-?   ?   ??? utils/
-?   ?       ??? ApiError.ts
-?   ?       ??? asyncHandler.ts
-?   ?       ??? jwt.ts
-?   ??? config/
-?   ?   ??? cloudinary.ts
-?   ?   ??? env.ts
-?   ?   ??? logger.ts
-?   ?   ??? metrics.ts
-?   ?   ??? swagger.ts
-?   ??? db/
-?   ?   ??? prisma.ts
-?   ??? modules/
-?       ??? auth/
-?       ??? bookings/
-?       ??? categories/
-?       ??? cities/
-?       ??? countries/
-?       ??? currencies/
-?       ??? mail/
-?       ??? otp/
-?       ??? unit-favorites/
-?       ??? unit-photos/
-?       ??? unit-reviews/
-?       ??? units/
-?       ??? users/
-??? test/
-?   ??? e2e/
-?   ??? integration/
-?   ??? unit/
-??? .mocharc.json
-??? .nycrc.json
-??? package.json
-??? prisma.config.ts
-??? tsconfig.json
-??? README.md
-??? ...
+├── .env
+├── .env.test
+├── .gitignore
+├── .mocharc.json
+├── .nycrc.json
+├── Dockerfile
+├── README.md
+├── docs/
+│   └── openapi.yaml
+├── plans/
+│   ├── security-study.md
+│   └── security.md
+├── prisma/
+│   ├── migrations/
+│   │   └── ...
+│   ├── schema.prisma
+│   ├── seed-admin.ts
+│   └── seed.ts
+├── src/
+│   ├── app.ts
+│   ├── server.ts
+│   ├── common/
+│   │   ├── middleware/
+│   │   │   ├── authGuard.ts
+│   │   │   ├── errorHandler.ts
+│   │   │   ├── metrics.ts
+│   │   │   ├── roleGuard.ts
+│   │   │   ├── upload.ts
+│   │   │   └── validate.ts
+│   │   ├── types/
+│   │   │   └── express.d.ts
+│   │   └── utils/
+│   │       ├── ApiError.ts
+│   │       ├── asyncHandler.ts
+│   │       └── jwt.ts
+│   ├── config/
+│   │   ├── cloudinary.ts
+│   │   ├── env.ts
+│   │   ├── logger.ts
+│   │   ├── metrics.ts
+│   │   └── swagger.ts
+│   ├── db/
+│   │   └── prisma.ts
+│   └── modules/
+│       ├── auth/
+│       ├── bookings/
+│       ├── categories/
+│       ├── cities/
+│       ├── countries/
+│       ├── currencies/
+│       ├── mail/
+│       ├── otp/
+│       ├── unit-favorites/
+│       ├── unit-photos/
+│       ├── unit-reviews/
+│       ├── units/
+│       └── users/
+├── test/
+│   ├── e2e/
+│   ├── integration/
+│   └── unit/
+├── dist/
+├── node_modules/
+├── package.json
+├── prisma.config.ts
+├── tsconfig.json
+├── tsconfig.test.json
+├── mocharc.json
+├── nycrc.json
+└── Dockerfile
 ```
 
 ## Prerequisites
