@@ -1,4 +1,4 @@
-﻿# Shelter
+# Shelter
 
 A custom Express + TypeScript backend for a short-term rental platform.
 
@@ -29,7 +29,7 @@ Shelter exposes a REST API for:
 - JWT authentication
 - Zod validation
 - Cloudinary
-- Resend
+- Nodemailer (SMTP)
 - Pino logging
 - Mocha + Chai + Sinon + Supertest
 
@@ -55,60 +55,60 @@ The backend includes the following security protections:
 
 ```text
 backend/
-├── prisma/
-│   ├── migrations/
-│   ├── schema.prisma
-│   ├── seed-admin.ts
-│   └── seed.ts
-├── src/
-│   ├── app.ts
-│   ├── server.ts
-│   ├── common/
-│   │   ├── middleware/
-│   │   │   ├── authGuard.ts
-│   │   │   ├── errorHandler.ts
-│   │   │   ├── roleGuard.ts
-│   │   │   ├── upload.ts
-│   │   │   └── validate.ts
-│   │   ├── types/
-│   │   │   └── express.d.ts
-│   │   └── utils/
-│   │       ├── ApiError.ts
-│   │       ├── asyncHandler.ts
-│   │       └── jwt.ts
-│   ├── config/
-│   │   ├── cloudinary.ts
-│   │   ├── env.ts
-│   │   ├── logger.ts
-│   │   ├── metrics.ts
-│   │   └── swagger.ts
-│   ├── db/
-│   │   └── prisma.ts
-│   └── modules/
-│       ├── auth/
-│       ├── bookings/
-│       ├── categories/
-│       ├── cities/
-│       ├── countries/
-│       ├── currencies/
-│       ├── mail/
-│       ├── otp/
-│       ├── unit-favorites/
-│       ├── unit-photos/
-│       ├── unit-reviews/
-│       ├── units/
-│       └── users/
-├── test/
-│   ├── e2e/
-│   ├── integration/
-│   └── unit/
-├── .mocharc.json
-├── .nycrc.json
-├── package.json
-├── prisma.config.ts
-├── tsconfig.json
-├── README.md
-└── ...
+??? prisma/
+?   ??? migrations/
+?   ??? schema.prisma
+?   ??? seed-admin.ts
+?   ??? seed.ts
+??? src/
+?   ??? app.ts
+?   ??? server.ts
+?   ??? common/
+?   ?   ??? middleware/
+?   ?   ?   ??? authGuard.ts
+?   ?   ?   ??? errorHandler.ts
+?   ?   ?   ??? roleGuard.ts
+?   ?   ?   ??? upload.ts
+?   ?   ?   ??? validate.ts
+?   ?   ??? types/
+?   ?   ?   ??? express.d.ts
+?   ?   ??? utils/
+?   ?       ??? ApiError.ts
+?   ?       ??? asyncHandler.ts
+?   ?       ??? jwt.ts
+?   ??? config/
+?   ?   ??? cloudinary.ts
+?   ?   ??? env.ts
+?   ?   ??? logger.ts
+?   ?   ??? metrics.ts
+?   ?   ??? swagger.ts
+?   ??? db/
+?   ?   ??? prisma.ts
+?   ??? modules/
+?       ??? auth/
+?       ??? bookings/
+?       ??? categories/
+?       ??? cities/
+?       ??? countries/
+?       ??? currencies/
+?       ??? mail/
+?       ??? otp/
+?       ??? unit-favorites/
+?       ??? unit-photos/
+?       ??? unit-reviews/
+?       ??? units/
+?       ??? users/
+??? test/
+?   ??? e2e/
+?   ??? integration/
+?   ??? unit/
+??? .mocharc.json
+??? .nycrc.json
+??? package.json
+??? prisma.config.ts
+??? tsconfig.json
+??? README.md
+??? ...
 ```
 
 ## Prerequisites
@@ -142,8 +142,11 @@ CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
 
 MAIL_USER="your-email@example.com"
-MAIL_FROM="your-verified-resend-sender@example.com"
-RESEND_API_KEY="your-resend-api-key"
+MAIL_PASSWORD="your-email-app-password"
+MAIL_FROM="your-email@example.com"
+MAIL_HOST="smtp.gmail.com"
+MAIL_PORT="587"
+MAIL_SECURE="false"
 
 CORS_ORIGINS="https://your-frontend.com,https://admin.example.com"
 ```
@@ -270,7 +273,7 @@ Before deploying this backend to production, confirm the following:
 2. `DATABASE_URL` points to the production PostgreSQL instance.
 3. `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are strong secrets.
 4. `CORS_ORIGINS` contains only trusted frontend origins.
-5. `MAIL_FROM` is a verified Resend sender address and `RESEND_API_KEY` is a valid Resend API key. `MAIL_USER` is used as a fallback sender.
+5. `MAIL_USER` and `MAIL_PASSWORD` are valid SMTP credentials. For Gmail, create an App Password and use `smtp.gmail.com` on port `587` with `MAIL_SECURE=false`.
 6. `CLOUDINARY_*` values are valid production credentials.
 7. `npx prisma migrate deploy` has been run against the target database.
 8. `npm run build` passes successfully.

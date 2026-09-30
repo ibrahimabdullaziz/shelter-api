@@ -37,15 +37,10 @@ function flushController() {
 describe("auth controller", () => {
   afterEach(() => sinon.restore());
 
-  it("registers a user and returns the created data", async () => {
-    const data = {
-      user: { id: "user-1" },
-      accessToken: "access",
-      refreshToken: "refresh",
-    };
+  it("returns the same accepted response for registration", async () => {
     const service = sinon
       .stub(authServices, "registerService")
-      .resolves(data as never);
+      .resolves(true);
     const response = createResponse();
 
     register(
@@ -68,16 +63,14 @@ describe("auth controller", () => {
         lastName: "Lovelace",
       }),
     ).to.equal(true);
-    expect((response.status as sinon.SinonStub).calledWith(201)).to.equal(true);
+    expect((response.status as sinon.SinonStub).calledWith(202)).to.equal(true);
     expect(
       (response.json as sinon.SinonStub).calledWith({
-        status: 201,
-        message: "User created successfully",
-        data,
+        status: 202,
+        message: "If the address can be registered, check your email for next steps.",
       }),
     ).to.equal(true);
   });
-
   it("logs in and returns the service data", async () => {
     const data = {
       user: { id: "user-1" },

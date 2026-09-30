@@ -258,6 +258,33 @@ describe("supporting services", () => {
       expect(result).to.equal(photo);
     });
 
+    it("preserves Cloudinary upload errors as useful errors", async () => {
+      sinon
+        .stub(unitPhotoServiceDependencies.prisma.unit, "findUnique")
+        .resolves(unit);
+      sinon
+        .stub(unitPhotoServiceDependencies.cloudinary.uploader, "upload_stream")
+        .callsFake((_options, callback) => {
+          (
+            callback as unknown as (
+              error: { message: string },
+              result: undefined,
+            ) => void
+          )({ message: "Invalid Signature" }, undefined);
+          return { end: sinon.stub() };
+        });
+
+      try {
+        await uploadUnitPhotoService("unit-1", "host-1", Buffer.from("data"));
+        expect.fail("upload should reject");
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error);
+        expect((error as Error).message).to.equal(
+          "Cloudinary upload failed: Invalid Signature",
+        );
+      }
+    });
+
     it("rejects photo uploads to deleted units", async () => {
       sinon
         .stub(unitPhotoServiceDependencies.prisma.unit, "findUnique")

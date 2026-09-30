@@ -42,13 +42,23 @@ async function issueTokens(user: { id: string; role: string }) {
   return { accessToken, refreshToken };
 }
 
-export async function registerService(data: RegisterDto) {
-  const user = await authServiceDependencies.createUser(data);
+export async function registerService(data: RegisterDto): Promise<boolean> {
+  let user;
+
+  try {
+    user = await authServiceDependencies.createUser(data);
+  } catch (error) {
+    if (error instanceof ApiError && error.statusCode === 409) {
+      return false;
+    }
+
+    throw error;
+  }
+
   if (!user) {
     throw new ApiError(500, "Server Error While Creation Operation");
   }
 
-  const { accessToken, refreshToken } = await issueTokens(user);
   const otp = await authServiceDependencies.generateOtp(
     user.email,
     "VERIFY_EMAIL",
@@ -66,12 +76,11 @@ export async function registerService(data: RegisterDto) {
   await authServiceDependencies.sendMail({
     to: user.email,
     subject: "Verify your email",
-    html: html,
+    html,
   });
 
-  return { accessToken, refreshToken, user: toPublicUser(user) };
+  return true;
 }
-
 export async function loginService(email: string, password: string) {
   const user = await authServiceDependencies.findByEmail(email);
 

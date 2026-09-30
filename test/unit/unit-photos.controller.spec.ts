@@ -1,7 +1,10 @@
 import { expect } from "chai";
 import { afterEach, describe, it } from "mocha";
 import sinon from "sinon";
+import express from "express";
+import requestHttp from "supertest";
 import type { NextFunction, Request, Response } from "express";
+import upload from "../../src/common/middleware/upload";
 import { unitPhotoServices } from "../../src/modules/unit-photos/unit-photos.service";
 import {
   deleteUnitPhoto,
@@ -41,6 +44,30 @@ function body(result: Response) {
 
 describe("unit photo controller", () => {
   afterEach(() => sinon.restore());
+
+  it("accepts a photo with multipart metadata", async () => {
+    const app = express();
+    app.post("/photos", upload.single("photo"), (req, res) => {
+      res.status(200).json({
+        hasPhoto: Boolean(req.file),
+        caption: req.body.caption,
+      });
+    });
+
+    const result = await requestHttp(app)
+      .post("/photos")
+      .field("caption", "Living room")
+      .attach("photo", Buffer.from([0xff, 0xd8, 0xff]), {
+        filename: "living-room.jpg",
+        contentType: "image/jpeg",
+      });
+
+    expect(result.status).to.equal(200);
+    expect(result.body).to.deep.equal({
+      hasPhoto: true,
+      caption: "Living room",
+    });
+  });
 
   it("uploads a photo for the authenticated host", async () => {
     const photo = { id: "photo-1", url: "https://example.com/photo.jpg" };

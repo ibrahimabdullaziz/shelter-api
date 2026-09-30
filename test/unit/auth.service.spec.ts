@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { afterEach, describe, it } from "mocha";
 import sinon from "sinon";
+import ApiError from "../../src/common/utils/ApiError";
 import {
   authServiceDependencies,
   forgotPasswordService,
@@ -37,21 +38,14 @@ function restore() {
 describe("auth service", () => {
   afterEach(restore);
 
-  it("registers a user, issues tokens, creates an OTP, and sends mail", async () => {
+  it("registers a user, creates an OTP, and sends mail without issuing tokens", async () => {
     const createUser = sinon
       .stub(authServiceDependencies, "createUser")
       .resolves(user as never);
-    const signAccessToken = sinon
-      .stub(authServiceDependencies, "signAccessToken")
-      .returns("access-token");
-    const signRefreshToken = sinon
-      .stub(authServiceDependencies, "signRefreshToken")
-      .returns("refresh-token");
     const generateOtp = sinon
       .stub(authServiceDependencies, "generateOtp")
       .resolves("123456");
     const sendMail = sinon.stub(authServiceDependencies, "sendMail");
-    sinon.stub(authServiceDependencies, "createRefreshSession").resolves();
     const data = {
       email: user.email,
       password: "password123",
@@ -62,12 +56,6 @@ describe("auth service", () => {
     const result = await registerService(data);
 
     expect(createUser.calledWith(data)).to.equal(true);
-    expect(
-      signAccessToken.calledWith({ id: user.id, role: user.role }),
-    ).to.equal(true);
-    expect(
-      signRefreshToken.calledWith({ id: user.id, role: user.role }),
-    ).to.equal(true);
     expect(generateOtp.calledWith(user.email, "VERIFY_EMAIL")).to.equal(true);
     expect(
       sendMail.calledWithMatch({
@@ -76,13 +64,29 @@ describe("auth service", () => {
         html: sinon.match("123456"),
       }),
     ).to.equal(true);
-    expect(result).to.deep.equal({
-      accessToken: "access-token",
-      refreshToken: "refresh-token",
-      user: publicUser,
-    });
+    expect(result).to.equal(true);
   });
+  it("returns the generic registration outcome for an existing email", async () => {
+    const duplicateEmailError = new ApiError(
+      409,
+      "An account with this email already exists",
+    );    sinon
+      .stub(authServiceDependencies, "createUser")
+      .rejects(duplicateEmailError);
+    const generateOtp = sinon.stub(authServiceDependencies, "generateOtp");
+    const sendMail = sinon.stub(authServiceDependencies, "sendMail");
 
+    const result = await registerService({
+      email: user.email,
+      password: "password123",
+      firstName: "Ada",
+      lastName: "Lovelace",
+    });
+
+    expect(result).to.equal(false);
+    expect(generateOtp.notCalled).to.equal(true);
+    expect(sendMail.notCalled).to.equal(true);
+  });
   it("throws when user creation returns no user", async () => {
     sinon.stub(authServiceDependencies, "createUser").resolves(null as never);
 

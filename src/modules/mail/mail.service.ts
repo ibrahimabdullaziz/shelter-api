@@ -1,8 +1,16 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import config from "../../config/env";
 import logger from "../../config/logger";
 
-const resend = new Resend(config.resendApiKey);
+const transporter = nodemailer.createTransport({
+  host: config.mailHost,
+  port: config.mailPort,
+  secure: config.mailSecure,
+  auth: {
+    user: config.mailUser,
+    pass: config.mailPassword,
+  },
+});
 
 export async function sendMail({
   to,
@@ -14,43 +22,27 @@ export async function sendMail({
   html: string;
 }) {
   try {
-    const { data, error } = await resend.emails.send({
+    const info = await transporter.sendMail({
       from: config.mailFrom,
       to,
       subject,
       html,
     });
 
-    if (error) {
-      const providerError = error as {
-        name?: string;
-        message?: string;
-        statusCode?: number;
-      };
-
-      throw Object.assign(
-        new Error(providerError.message || "Resend rejected the email"),
-        {
-          name: providerError.name || "ResendError",
-          statusCode: providerError.statusCode,
-        },
-      );
-    }
-
-    logger.info({ messageId: data?.id }, "Email delivered");
+    logger.info({ messageId: info.messageId }, "Email delivered");
   } catch (error) {
     const mailError = error as {
       name?: string;
       message?: string;
-      statusCode?: number;
+      responseCode?: number;
     };
 
     logger.error(
       {
-        mailProvider: "resend",
+        mailProvider: "nodemailer",
         errorName: mailError.name || "UnknownError",
         errorMessage: mailError.message || "Unknown error",
-        statusCode: mailError.statusCode,
+        responseCode: mailError.responseCode,
       },
       "Email delivery failed",
     );

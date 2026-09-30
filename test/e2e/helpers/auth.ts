@@ -45,12 +45,12 @@ export async function registerTestUser(
     lastName: prefix,
   });
 
-  if (response.status !== 201) {
+  if (response.status !== 202) {
     throw new Error(`Registration failed with status ${response.status}`);
   }
 
   return {
-    id: response.body.data.user.id,
+    id: (await prisma.user.findUniqueOrThrow({ where: { email } })).id,
     email,
     password,
   };

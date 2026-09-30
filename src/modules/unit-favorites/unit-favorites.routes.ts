@@ -10,7 +10,7 @@ import {
 const unitFavoriteRoutes = express.Router({ mergeParams: true });
 const unitFavoriteGetRoutes = express.Router({ mergeParams: true });
 
-unitFavoriteGetRoutes.get("/", listFavorites);
+unitFavoriteGetRoutes.get("/", authGuard, listFavorites);
 unitFavoriteRoutes.post("/", authGuard, roleGuard("GUEST"), addFavorite);
 unitFavoriteRoutes.delete("/", authGuard, roleGuard("GUEST"), removeFavorite);
 

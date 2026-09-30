@@ -8,7 +8,7 @@ if (
   !process.env.CLOUDINARY_API_KEY ||
   !process.env.CLOUDINARY_API_SECRET ||
   !process.env.MAIL_USER ||
-  !process.env.RESEND_API_KEY
+  !process.env.MAIL_PASSWORD
 ) {
   throw new Error("Missing Some Environment Variables. Check Your .env file");
 }
@@ -29,7 +29,10 @@ interface AppConfig {
   cloudinaryApiSecret: string;
   mailUser: string;
   mailFrom: string;
-  resendApiKey: string;
+  mailPassword: string;
+  mailHost: string;
+  mailPort: number;
+  mailSecure: boolean;
   nodeEnv: string;
   corsOrigins: string[];
 }
@@ -46,7 +49,10 @@ const config: AppConfig = {
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET as string,
   mailUser: process.env.MAIL_USER as string,
   mailFrom: (process.env.MAIL_FROM || process.env.MAIL_USER) as string,
-  resendApiKey: process.env.RESEND_API_KEY as string,
+  mailPassword: process.env.MAIL_PASSWORD as string,
+  mailHost: process.env.MAIL_HOST || "smtp.gmail.com",
+  mailPort: parseInt(process.env.MAIL_PORT || "587", 10),
+  mailSecure: process.env.MAIL_SECURE === "true",
   nodeEnv: process.env.NODE_ENV || "development",
   corsOrigins: (process.env.CORS_ORIGINS || "")
     .split(",")

@@ -37,6 +37,7 @@ export function signRefreshToken(payload: JwtPayload): string {
     config.jwtRefreshSecret,
     {
       ...refreshTokenOptions,
+      jwtid: crypto.randomUUID(),
     },
   );
   return token;

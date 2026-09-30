@@ -19,7 +19,9 @@ function uploadBuffer(buffer: Buffer) {
             error: UploadApiErrorResponse | undefined,
             result: UploadApiResponse | undefined,
           ) => {
-            if (error) return reject(error);
+            if (error) {
+              return reject(new Error(`Cloudinary upload failed: ${error.message}`));
+            }
             if (!result) {
               return reject(new Error("Cloudinary upload returned no result"));
             }

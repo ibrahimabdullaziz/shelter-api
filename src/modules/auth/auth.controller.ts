@@ -6,21 +6,24 @@ import { usersRegisteredTotal } from "../../config/metrics";
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password, firstName, lastName } = req.body;
 
-  const data = await authServices.registerService({
+  const created = await authServices.registerService({
     email,
     password,
     firstName,
     lastName,
   });
 
-  req.log?.info({ userId: data.user.id }, "User registered");
-  usersRegisteredTotal.inc();
+  if (created) {
+    usersRegisteredTotal.inc();
+  }
 
-  return res
-    .status(201)
-    .json({ status: 201, message: "User created successfully", data });
+  req.log?.info({ registrationCreated: created }, "Registration processed");
+
+  return res.status(202).json({
+    status: 202,
+    message: "If the address can be registered, check your email for next steps.",
+  });
 });
-
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 

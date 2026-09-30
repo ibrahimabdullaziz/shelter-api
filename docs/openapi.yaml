@@ -158,7 +158,7 @@ components:
       properties:
         token:
           type: string
-          description: Refresh token returned from login or register.
+          description: Refresh token returned from login.
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
     VerifyEmailRequest:
@@ -452,7 +452,7 @@ paths:
     post:
       tags: [Auth]
       summary: Register a new user
-      description: Create a new Shelter account with email, password, and profile details.
+      description: Starts a registration flow without revealing whether the email is already registered.
       operationId: registerUser
       security: []
       requestBody:
@@ -467,29 +467,24 @@ paths:
               firstName: Jane
               lastName: Doe
       responses:
-        "201":
-          description: User created successfully
+        "202":
+          description: Registration request accepted
           content:
             application/json:
               schema:
                 type: object
-                required: [status, message, data]
+                required: [status, message]
                 properties:
                   status:
                     type: integer
-                    example: 201
+                    example: 202
                   message:
                     type: string
-                    example: User created successfully
-                  data:
-                    $ref: "#/components/schemas/AuthTokens"
+                    example: If the address can be registered, check your email for next steps.
         "400":
           $ref: "#/components/responses/BadRequest"
-        "409":
-          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalServerError"
-
   /api/auth/login:
     post:
       tags: [Auth]

@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import ApiError from "../../common/utils/ApiError";
 import prisma from "../../db/prisma";
 
@@ -9,19 +9,21 @@ export const createUser = async (data: {
   firstName: string;
   lastName: string;
 }) => {
-  try {
-    const { password } = data;
-    const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const user = await prisma.user.create({
+  try {
+    return await prisma.user.create({
       data: { ...data, password: hashedPassword },
     });
-    return user;
-  } catch (err) {
-    throw new ApiError(
-      500,
-      "Sorry, Something gets wrong during creation process",
-    );
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new ApiError(409, "An account with this email already exists");
+    }
+
+    throw error;
   }
 };
 
