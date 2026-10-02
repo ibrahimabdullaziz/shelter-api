@@ -98,6 +98,7 @@ describe("units service", () => {
         where: { isActive: true, deletedAt: null },
         skip: 0,
         take: 20,
+        include: { photos: true },
       }),
     ).to.equal(true);
   });
@@ -125,6 +126,7 @@ describe("units service", () => {
         },
         skip: 20,
         take: 10,
+        include: { photos: true },
       }),
     ).to.equal(true);
   });

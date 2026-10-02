@@ -4,6 +4,14 @@ import { BookingStatus, Prisma } from "@prisma/client";
 import prisma from "../src/db/prisma";
 
 const seedPassword = "SeedPassword123!";
+const unitPhotoUrls = [
+  "https://images.unsplash.com/photo-1544070515-dada2bc86650?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1779642089774-b3bf433438f4?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1564260597137-9670bbba6912?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1734201862414-99c1ab56dd9e?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1748635954738-34c20f7e9733?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1719008681360-ea26073c966e?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+];
 
 async function createCountries() {
   const countries = [
@@ -163,14 +171,14 @@ async function createUnits(
 async function createPhotos(units: Awaited<ReturnType<typeof createUnits>>) {
   const photos = [];
 
-  for (const unit of units) {
+  for (const [unitIndex, unit] of units.entries()) {
     const count = faker.number.int({ min: 2, max: 4 });
     for (let index = 0; index < count; index += 1) {
       photos.push(
         await prisma.unitPhoto.create({
           data: {
             unitId: unit.id,
-            url: faker.image.urlPicsumPhotos(),
+            url: unitPhotoUrls[(unitIndex + index) % unitPhotoUrls.length],
             publicId: `seed-photo-${unit.id}-${index + 1}`,
           },
         }),
@@ -179,6 +187,31 @@ async function createPhotos(units: Awaited<ReturnType<typeof createUnits>>) {
   }
 
   return photos;
+}
+
+async function updateSeedPhotos() {
+  const photos = await prisma.unitPhoto.findMany({
+    where: { publicId: { startsWith: "seed-photo-" } },
+    select: { id: true },
+    orderBy: [{ unitId: "asc" }, { publicId: "asc" }],
+  });
+
+  if (photos.length === 0) {
+    console.log("No seeded unit photos found.");
+    return;
+  }
+
+  await prisma.$transaction(
+    photos.map(({ id }, index) =>
+      prisma.unitPhoto.update({
+        where: { id },
+        data: { url: unitPhotoUrls[index % unitPhotoUrls.length] },
+      }),
+    ),
+    { timeout: 60_000 },
+  );
+
+  console.log(`Updated ${photos.length} seeded unit photos.`);
 }
 
 function bookingDates(status: BookingStatus, slot: number) {
@@ -334,7 +367,9 @@ export async function main() {
   console.log("Seed completed successfully.");
 }
 
-main()
+const task = process.argv[2] === "photos" ? updateSeedPhotos() : main();
+
+task
   .catch((error) => {
     console.error(error);
     process.exitCode = 1;

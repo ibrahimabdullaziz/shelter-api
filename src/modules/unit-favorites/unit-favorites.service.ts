@@ -54,6 +54,7 @@ export async function listFavoritesService(userId: string) {
           cityId: true,
           currencyId: true,
           categoryId: true,
+          photos: true,
         },
       },
     },

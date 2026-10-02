@@ -86,6 +86,7 @@ export async function listUnitsService(filters: listUnitsQueryDto) {
     where,
     skip: (page - 1) * limit,
     take: limit,
+    include: { photos: true },
   });
 
   return listedUnits;
@@ -118,6 +119,7 @@ export async function getUnitByIdService(id: string) {
 export async function listMyUnitsService(ownerId: string) {
   const units = await unitServiceDependencies.prisma.unit.findMany({
     where: { ownerId, deletedAt: null },
+    include: { photos: true },
   });
 
   return units;
